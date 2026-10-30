@@ -1,0 +1,21 @@
+<div class="stock-table-wrap">
+  <table class="stock-table">
+    <thead><tr><th>Product</th><th>Supplier</th><% if (showPrice) { %><th class="numeric">Price</th><% } %><th class="numeric">Stock</th><th>Status</th><th class="actions-heading">Actions</th></tr></thead>
+    <tbody>
+      <% products.forEach(product => { %>
+        <tr data-product-row data-category="<%= product.category %>" data-stock="<%= product.stock %>">
+          <td><div class="product-identity"><span class="product-symbol"><i class="bi bi-box-seam" aria-hidden="true"></i></span><div><strong><%= product.name %></strong><small><%= categoryLabel(product.category) %></small></div></div></td>
+          <td><%= product.supplier_name || 'No supplier assigned' %></td>
+          <% if (showPrice) { %><td class="numeric"><%= money(product.price) %></td><% } %>
+          <td class="numeric stock-quantity"><%= product.stock %></td>
+          <td><span class="stock-status <%= product.stock === 0 ? 'stock-out' : product.stock < 10 ? 'stock-low' : 'stock-good' %>"><i class="bi <%= product.stock >= 10 ? 'bi-check2' : 'bi-exclamation-circle' %>" aria-hidden="true"></i><%= product.stock === 0 ? 'Out of stock' : product.stock < 10 ? 'Low stock' : 'In stock' %></span></td>
+          <td><div class="stock-row-actions"><button class="detail-link" type="button" data-product-details="<%= JSON.stringify({ id: product.id, name: product.name, description: product.description, supplier: product.supplier_name || 'No supplier assigned', category: categoryLabel(product.category), stock: product.stock, price: money(product.price) }) %>">Details</button><% if (allowDelete) { %><button type="button" class="stock-icon-button danger" aria-label="Delete <%= product.name %>" data-id="<%= product.id %>" data-name="<%= product.name %>" onclick="confirmDelete(this.dataset.id, this.dataset.name)"><i class="bi bi-trash3" aria-hidden="true"></i></button><% } %></div></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+<% if (!products.length) { %>
+  <div class="stock-empty"><i class="bi bi-box-seam" aria-hidden="true"></i><h2>Your inventory starts here.</h2><p>Add your first product to start tracking stock and suppliers.</p><a class="stock-button primary" href="/inventory/products/add">Add your first product</a></div>
+<% } %>
+<p class="stock-empty" id="noMatchingProducts" hidden>No products match your filters.</p>

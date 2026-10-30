@@ -1,36 +1,4 @@
-<!-- Header/Navbar -->
-
-<header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-3" style="height:64px; width:100%; max-width:100vw;">
-    <div class="container-fluid d-flex align-items-center justify-content-end" style="max-width: 100vw;">
-        <div class="d-flex align-items-center gap-4">
-<a href="/inventory/reports" class="position-relative text-decoration-none text-dark">
-  <i class="fa-regular fa-bell fs-4"></i>
-  <% if (lowStockCount > 0) { %>
-    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-      <%= lowStockCount %>
-    </span>
-  <% } %>
-</a>
-
- <button class="btn btn-link text-dark p-0"><i class="fa-regular fa-circle-question fs-4"></i></button>
-     <div class="dropdown">
-         <a class="fw-semibold text-dark dropdown-toggle"style="text-decoration:none; font-size:22px;" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-           <%= user.name %>
-         </a>
-
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
-                    <li>
-                        <a class="dropdown-item" href="/inventory/profile">
-                            <i class="bi bi-person-circle me-2"></i> Profile
-                        </a>
-                    </li>
-                    <li>
-                        <form action="/logout" method="POST"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="dropdown-item text-danger" type="submit">
-                            <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
-                        </button></form>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
+<header class="workspace-header">
+  <div class="workspace-breadcrumb"><button class="stock-icon-button mobile-nav-toggle" type="button" id="toggleNavigation" aria-label="Toggle navigation" aria-controls="workspaceSidebar" aria-expanded="false"><i class="bi bi-list" aria-hidden="true"></i></button><span>Workspace</span><span class="breadcrumb-divider">/</span><strong><%= title %></strong></div>
+  <div class="header-actions"><a class="stock-icon-button notification-link" href="/inventory/reports" aria-label="<%= lowStockCount %> products need attention"><i class="bi bi-bell" aria-hidden="true"></i><% if (lowStockCount) { %><span class="notification-dot"></span><% } %></a><form action="/logout" method="POST"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="stock-icon-button" type="submit" aria-label="Sign out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i></button></form><a class="workspace-avatar small" href="/inventory/profile" aria-label="Your profile"><%= (user.name || 'U').slice(0,1).toUpperCase() %></a></div>
 </header>

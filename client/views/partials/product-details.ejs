@@ -1,0 +1,11 @@
+<dialog id="productDetails" class="product-dialog" aria-labelledby="productDetailsTitle">
+  <div class="dialog-heading"><span class="product-symbol"><i class="bi bi-box-seam" aria-hidden="true"></i></span><button class="stock-icon-button" type="button" data-close-details aria-label="Close product details"><i class="bi bi-x-lg" aria-hidden="true"></i></button></div>
+  <p class="stock-eyebrow">PRODUCT DETAILS</p><h2 id="productDetailsTitle"></h2><p id="productDetailsDescription" class="stock-muted"></p>
+  <dl class="product-facts"><div><dt>Supplier</dt><dd id="productDetailsSupplier"></dd></div><div><dt>Category</dt><dd id="productDetailsCategory"></dd></div><div><dt>Price</dt><dd id="productDetailsPrice"></dd></div><div><dt>Units on hand</dt><dd id="productDetailsStock"></dd></div></dl>
+  <form action="/inventory/restock" method="POST" class="restock-inline">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="product_id" id="restockProductId">
+    <input type="hidden" name="return_to" value="<%= ['/dashboard','/inventory/products','/inventory/reports'].includes(currentPath) ? currentPath : '/inventory/products' %>">
+    <label for="restockQuantity">Quantity to add<input class="form-control" id="restockQuantity" name="restock_quantity" type="number" min="1" max="2147483647" step="1" value="10" required></label><button class="stock-button primary" type="submit"><i class="bi bi-plus-lg" aria-hidden="true"></i> Restock</button>
+  </form>
+  <a id="productDetailsEdit" class="stock-button secondary full-width" href="/inventory/products">Edit product information <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+</dialog>

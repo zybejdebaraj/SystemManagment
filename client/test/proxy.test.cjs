@@ -4,13 +4,13 @@ const http = require('node:http');
 const { once } = require('node:events');
 const { createClientServer } = require('../scripts/proxy.cjs');
 
-async function listen(t, server) {
+async function listen(t, server, host = '127.0.0.1') {
   t.after(async () => {
     const closed = new Promise(resolve => server.close(resolve));
     server.closeAllConnections(); await closed;
   });
-  server.listen(0, '127.0.0.1'); await once(server, 'listening');
-  return `http://127.0.0.1:${server.address().port}`;
+  server.listen(0, host); await once(server, 'listening');
+  return `http://${host.includes(':') ? `[${host}]` : host}:${server.address().port}`;
 }
 
 test('client runs on its own port and forwards pages, cookies, and form bodies', async t => {
@@ -65,4 +65,22 @@ test('proxy rejects unsupported or ambiguous backend targets', () => {
   for (const target of ['file:///test', 'http://user:password@localhost:3002', 'http://localhost:3002/path', 'http://localhost:3002/?x=1']) {
     assert.throws(() => createClientServer({ target }), /SERVER_URL/);
   }
+});
+
+test('malformed backend redirects return 502 while the client keeps serving requests', async t => {
+  let destination = 'http://[invalid';
+  const backend = await listen(t, http.createServer((req, res) => { res.writeHead(302, { Location: destination }); res.end(); }));
+  const client = await listen(t, createClientServer({ target: backend }));
+  const invalid = await fetch(client, { redirect: 'manual' });
+  assert.equal(invalid.status, 502); assert.match(await invalid.text(), /invalid redirect/);
+  destination = '/dashboard';
+  const valid = await fetch(client, { redirect: 'manual' });
+  assert.equal(valid.status, 302); assert.equal(valid.headers.get('location'), '/dashboard'); await valid.text();
+});
+
+test('client connects to an IPv6 loopback backend', async t => {
+  const backend = await listen(t, http.createServer((req, res) => res.end('IPv6 inventory')), '::1');
+  const client = await listen(t, createClientServer({ target: backend }));
+  const response = await fetch(client);
+  assert.equal(response.status, 200); assert.equal(await response.text(), 'IPv6 inventory');
 });

@@ -3,6 +3,7 @@
   const category = document.getElementById('categoryFilter');
   const stock = document.getElementById('stockFilter');
   const rows = document.querySelectorAll('[data-product-row]');
+  const empty = document.getElementById('noMatchingProducts');
 
   function applyFilters() {
     const query = search.value.trim().toLowerCase();
@@ -14,6 +15,7 @@
         && (!stock.value || status === stock.value);
       row.hidden = !matches;
     }
+    if (empty) empty.hidden = rows.length === 0 || [...rows].some(row => !row.hidden);
   }
 
   search.addEventListener('input', applyFilters);

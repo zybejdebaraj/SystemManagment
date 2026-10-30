@@ -20,16 +20,23 @@ function createClientServer({ target = 'http://127.0.0.1:3002', timeout = 15000 
     headers['x-forwarded-proto'] = 'http';
     let timedOut = false;
     const upstream = transport.request({
-      protocol: backend.protocol, hostname: backend.hostname, port: backend.port,
+      protocol: backend.protocol, hostname: backend.hostname.replace(/^\[|\]$/g, ''), port: backend.port,
       method: req.method, path: req.url, headers,
     }, response => {
+      response.on('error', () => res.destroy());
       const responseHeaders = cleanHeaders(response.headers);
-      if (responseHeaders.location) {
-        const location = new URL(responseHeaders.location, backend);
-        if (location.origin === backend.origin) responseHeaders.location = location.pathname + location.search + location.hash;
+      try {
+        if (responseHeaders.location) {
+          const location = new URL(responseHeaders.location, backend);
+          if (location.origin === backend.origin) responseHeaders.location = location.pathname + location.search + location.hash;
+        }
+      } catch {
+        response.resume();
+        res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('The inventory server returned an invalid redirect. Please try again.');
+        return;
       }
       res.writeHead(response.statusCode, responseHeaders);
-      response.on('error', () => res.destroy());
       response.pipe(res);
     });
     upstream.setTimeout(timeout, () => { timedOut = true; upstream.destroy(new Error('Backend timeout')); });

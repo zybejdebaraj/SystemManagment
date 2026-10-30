@@ -2,6 +2,8 @@
 
 An Express/EJS application using PostgreSQL for inventory records, user accounts, and sessions. Client templates and browser assets live in `client`; backend code, configuration, uploads, and tests live in `server`. Each folder has its own package manifest and lockfile.
 
+The Stockroom Operations interface includes a compact sidebar, live inventory summaries, searchable stock tables, and product details with quick restocking. The overview highlights up to eight recent products with low stock first; the Products page contains the full inventory. Sign-in, editors, reports, and settings share the same light palette and teal accents.
+
 ## Structure
 
 ```text
@@ -117,5 +119,7 @@ From the repository root, run `./start-dev.ps1`. It opens separate Windows termi
 The client development server forwards cookies, CSRF form fields, file uploads, redirects, and static assets to the backend. Browser requests stay on the client origin, preserving the existing session-based authentication. This proxy is a local development entry point; deploy the Express server behind your production web server rather than using the client development watcher in production.
 
 Client-side scripts live in `client/public/js`. Product search, category, and stock filters apply together; ten units is consistently considered in stock. Chart.js is installed by the client package and served locally. Profile uploads are removed if their database update fails.
+
+Product editors include a revision token: saving an outdated form returns a conflict page with a link to reload the latest data, preserving intervening edits and restocks. Editing keeps custom categories and allows suppliers to be assigned or removed; descriptions and supplier assignments are optional. Private pages use `Cache-Control: no-store`. Replacing a profile picture removes the previous generated file only after its database update succeeds.
 
 If startup reports `EADDRINUSE`, another process is using that process's port. Stop the duplicate client or server watcher with Ctrl+C and restart the affected process. When switching from the earlier shared-server setup, stop the old terminal processes before starting one process from each folder.

@@ -1,0 +1,6 @@
+<% const categoryOptions = ['smartphones','laptops','desktops','tablets','monitors','printers_scanners','storage_devices','networking','accessories','headphones_audio','tv_entertainment','wearables','gaming','power_charging','components','smart_home','cameras'];
+   if (selectedCategory && !categoryOptions.includes(selectedCategory)) categoryOptions.push(selectedCategory); %>
+<option value="">Select a category</option>
+<% categoryOptions.forEach(category => { %>
+  <option value="<%= category %>" <%= selectedCategory === category ? 'selected' : '' %>><%= categoryLabel(category) %></option>
+<% }); %>

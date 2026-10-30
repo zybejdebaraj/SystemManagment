@@ -27,6 +27,7 @@ function createApp({ db, config, sessionStore, uploadDir = path.join(__dirname, 
   const chartBundle = path.join(path.dirname(require.resolve('chart.js', { paths: [path.join(__dirname, '../client')] })), 'chart.umd.js');
   app.get('/vendor/chart.js', (req, res) => res.sendFile(chartBundle));
   app.get('/health', async (req, res, next) => { try { await db.query('SELECT 1'); res.json({ status: 'ok', database: 'postgresql' }); } catch (error) { next(error); } });
+  app.use((req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
   app.use(express.urlencoded({ extended: false, limit: '100kb' }));
   app.use(express.json({ limit: '100kb' }));
   app.use(session({ store, name: 'inventory.sid', secret: config.sessionSecret, resave: false, saveUninitialized: false, rolling: true,
@@ -47,6 +48,9 @@ function createApp({ db, config, sessionStore, uploadDir = path.join(__dirname, 
   app.use((req, res, next) => {
     res.locals.user = req.user || null;
     res.locals.title = 'Inventory Management';
+    res.locals.currentPath = req.path;
+    res.locals.categoryLabel = value => String(value || 'Uncategorized').replace(/_/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
+    res.locals.money = value => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(Number(value) || 0);
     res.locals.successMessage = req.flash('success')[0] || null;
     res.locals.errorMessage = req.flash('error')[0] || null;
     res.locals.googleEnabled = Boolean(config.google);
@@ -66,26 +70,37 @@ function createApp({ db, config, sessionStore, uploadDir = path.join(__dirname, 
       const lowStockProducts = (await db.query('SELECT * FROM products WHERE stock < 10 ORDER BY stock,id')).rows;
       const stockLevels = (await db.query(`SELECT COUNT(*) FILTER (WHERE stock>=10)::int AS good,
         COUNT(*) FILTER (WHERE stock BETWEEN 5 AND 9)::int AS low,COUNT(*) FILTER (WHERE stock<5)::int AS critical FROM products`)).rows[0];
+      const products = (await db.query(`SELECT p.*,s.name AS supplier_name FROM products p LEFT JOIN suppliers s ON s.id=p.supplier_id
+        ORDER BY CASE WHEN p.stock<10 THEN 0 ELSE 1 END,p.updated_at DESC,p.id DESC LIMIT 8`)).rows;
       res.locals.lowStockCount = lowStockProducts.length;
-      res.render('inventory-dashboard', { dashboardData: { ...totals, categoryDistribution, lowStockProducts, stockLevels } });
+      res.render('inventory-dashboard', { title: 'Overview', dashboardData: { ...totals, categoryDistribution, lowStockProducts, stockLevels, products } });
     } catch (error) { next(error); }
   });
   app.use('/inventory', auth, async (req, res, next) => {
     try { res.locals.lowStockCount = (await db.query('SELECT COUNT(*)::int AS count FROM products WHERE stock<10')).rows[0].count; next(); }
     catch (error) { next(error); }
   }, inventoryRoutes({ db, uploadDir }));
-  app.use((req, res) => res.status(404).send('Page not found'));
+  function renderError(req, res, status, message) {
+    const editor = status !== 404 && /^\/inventory\/products\/edit\/\d+$/.test(req.path);
+    return res.status(status).render('error', {
+      layout: req.user ? 'layouts/inventory' : 'layouts/error',
+      title: status === 409 ? 'Review the latest changes' : status === 404 ? 'Page not found' : 'Unable to complete your request',
+      status, message, retryPath: editor ? req.path : req.user ? '/dashboard' : '/',
+      retryLabel: editor ? 'Reload product editor' : req.user ? 'Back to overview' : 'Back to sign in',
+    });
+  }
+  app.use((req, res) => renderError(req, res, 404, 'Page not found'));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
-    if (error instanceof RequestError) return res.status(error.status).send(error.message);
-    if (error.code === '23503') return res.status(400).send('The linked record does not exist or is still in use.');
-    if (error.code === '23505') return res.status(409).send('This record already exists.');
-    if (error.code === '22003') return res.status(400).send('The value is too large.');
-    if (error.code?.startsWith('LIMIT_')) return res.status(400).send('Choose one PNG or JPEG image up to 5 MB.');
-    if (error.type === 'entity.too.large') return res.status(413).send('The request is too large.');
-    if (error.type === 'entity.parse.failed') return res.status(400).send('Invalid JSON body.');
+    if (error instanceof RequestError) return renderError(req, res, error.status, error.message);
+    if (error.code === '23503') return renderError(req, res, 400, 'The linked record does not exist or is still in use.');
+    if (error.code === '23505') return renderError(req, res, 409, 'This record already exists.');
+    if (error.code === '22003') return renderError(req, res, 400, 'The value is too large.');
+    if (error.code?.startsWith('LIMIT_')) return renderError(req, res, 400, 'Choose one PNG or JPEG image up to 5 MB.');
+    if (error.type === 'entity.too.large') return renderError(req, res, 413, 'The request is too large.');
+    if (error.type === 'entity.parse.failed') return renderError(req, res, 400, 'Invalid JSON body.');
     console.error('Request failed:', error.code || error.name);
-    res.status(500).send('An unexpected error occurred. Please try again.');
+    renderError(req, res, 500, 'An unexpected error occurred. Please try again.');
   });
   return app;
 }

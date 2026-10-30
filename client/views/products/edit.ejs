@@ -1,6 +1,3 @@
-
-
-
 <div class="container-fluid px-4 py-4">
     <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -17,35 +14,20 @@
             <!-- Edit form action -->
             <form action="/inventory/products/edit/<%= product.id %>" method="POST">
 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="revision" value="<%= product.revision %>">
                 <div class="mb-4">
                     <label for="name" class="form-label fw-bold">Product Name</label>
                     <input type="text" class="form-control" id="name" name="name" value="<%= product.name %>" required>
                 </div>
                 <div class="mb-4">
                     <label for="description" class="form-label fw-bold">Description</label>
-                    <textarea class="form-control" id="description" name="description" required><%= product.description %></textarea>
+                    <textarea class="form-control" id="description" name="description" maxlength="5000"><%= product.description %></textarea>
                 </div>
                <div class="mb-4">
   <label for="category" class="form-label fw-bold">Category</label>
  <select class="form-select" id="category" name="category" required>
-    <option value="smartphones" <%= product.category === 'smartphones' ? 'selected' : '' %>>Smartphones</option>
-    <option value="laptops" <%= product.category === 'laptops' ? 'selected' : '' %>>Laptops</option>
-    <option value="desktops" <%= product.category === 'desktops' ? 'selected' : '' %>>Desktops</option>
-    <option value="tablets" <%= product.category === 'tablets' ? 'selected' : '' %>>Tablets</option>
-    <option value="monitors" <%= product.category === 'monitors' ? 'selected' : '' %>>Monitors</option>
-    <option value="printers_scanners" <%= product.category === 'printers_scanners' ? 'selected' : '' %>>Printers & Scanners</option>
-    <option value="storage_devices" <%= product.category === 'storage_devices' ? 'selected' : '' %>>Storage Devices</option>
-    <option value="networking" <%= product.category === 'networking' ? 'selected' : '' %>>Networking</option>
-    <option value="accessories" <%= product.category === 'accessories' ? 'selected' : '' %>>Accessories</option>
-    <option value="headphones_audio" <%= product.category === 'headphones_audio' ? 'selected' : '' %>>Headphones & Audio</option>
-    <option value="tv_entertainment" <%= product.category === 'tv_entertainment' ? 'selected' : '' %>>TV & Entertainment</option>
-    <option value="wearables" <%= product.category === 'wearables' ? 'selected' : '' %>>Wearables</option>
-    <option value="gaming" <%= product.category === 'gaming' ? 'selected' : '' %>>Gaming</option>
-    <option value="power_charging" <%= product.category === 'power_charging' ? 'selected' : '' %>>Power & Charging</option>
-    <option value="components" <%= product.category === 'components' ? 'selected' : '' %>>Components</option>
-    <option value="smart_home" <%= product.category === 'smart_home' ? 'selected' : '' %>>Smart Home</option>
-    <option value="cameras" <%= product.category === 'cameras' ? 'selected' : '' %>>Cameras</option>
-  </select>
+  <%- include('../partials/category-options', { selectedCategory: product.category }) %>
+</select>
 </div>
 
                 <div class="mb-4">
@@ -55,6 +37,15 @@
                 <div class="mb-4">
                     <label for="stock" class="form-label fw-bold">Stock</label>
                     <input type="number" class="form-control" id="stock" name="stock" min="0" max="2147483647" step="1" value="<%= product.stock %>" required>
+                </div>
+                <div class="mb-4">
+                    <label for="supplier_id" class="form-label">Supplier</label>
+                    <select class="form-select" id="supplier_id" name="supplier_id">
+                        <option value="">No supplier assigned</option>
+                        <% suppliers.forEach(supplier => { %>
+                            <option value="<%= supplier.id %>" <%= product.supplier_id === supplier.id ? 'selected' : '' %>><%= supplier.name %></option>
+                        <% }); %>
+                    </select>
                 </div>
                 <div class="d-flex justify-content-between">
                     <a href="/inventory/products" class="btn btn-secondary fw-bold">Cancel</a>

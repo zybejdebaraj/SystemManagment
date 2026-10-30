@@ -85,7 +85,7 @@ test('inventory workflow uses PostgreSQL without modifying existing inventory', 
     await request('GET', '/'); assert.match(csrf, /^[a-f0-9]{64}$/);
   });
   await t.test('client assets are served from their new folder without exposing server files', async () => {
-    for (const asset of ['/styles.css','/image/inv3.jpg','/js/products.js','/js/dashboard.js','/vendor/chart.js']) {
+    for (const asset of ['/styles.css','/image/inv3.jpg','/js/products.js','/js/dashboard.js','/js/workspace.js','/js/overview.js','/vendor/chart.js']) {
       const response = await fetch(base + asset);
       assert.equal(response.status, 200, asset); assert((await response.arrayBuffer()).byteLength > 0);
     }
@@ -125,6 +125,13 @@ test('inventory workflow uses PostgreSQL without modifying existing inventory', 
     assert.match(html, /QA Owner/);
     assert((await db.query('SELECT COUNT(*)::int AS count FROM user_sessions')).rows[0].count > 0);
   });
+  await t.test('private pages are not cached and missing pages provide a usable recovery link', async () => {
+    const dashboard = await request('GET', '/dashboard');
+    assert.equal(dashboard.headers.get('cache-control'), 'no-store');
+    const missing = await request('GET', '/inventory/missing', undefined, 404);
+    assert.match(missing.html, /Page not found/);
+    assert.match(missing.html, /href="\/dashboard"/);
+  });
   await t.test('supplier CRUD keeps parameterized names and correct edit URLs', async () => {
     await request('POST', '/inventory/suppliers/add', { name: 'Supplier', contact: '123', email: 'supplier@example.invalid', address: 'QA street' }, 302);
     supplierId = (await db.query('SELECT id FROM suppliers')).rows[0].id;
@@ -141,8 +148,9 @@ test('inventory workflow uses PostgreSQL without modifying existing inventory', 
     assert(!(await request('GET', '/inventory/products')).html.includes('Product added successfully!'));
     assert.match(listed.html, /data-name="QA product&#39;s name"/);
     assert(!listed.html.includes("confirmDelete('"));
-    await request('GET', `/inventory/products/edit/${productId}`);
-    await request('POST', `/inventory/products/edit/${productId}`, { ...product, price: '0', stock: '3' }, 302);
+    const editor = await request('GET', `/inventory/products/edit/${productId}`);
+    const revision = editor.html.match(/name="revision" value="(\d+)"/)[1];
+    await request('POST', `/inventory/products/edit/${productId}`, { ...product, price: '0', stock: '3', revision }, 302);
     const updated = (await db.query('SELECT * FROM products WHERE id=$1', [productId])).rows[0];
     assert.equal(Number(updated.price), 0); assert.equal(updated.stock, 3); assert.equal(updated.supplier_id, supplierId);
   });
@@ -152,6 +160,27 @@ test('inventory workflow uses PostgreSQL without modifying existing inventory', 
     }
     await request('GET', '/inventory/products/edit/not-an-id', undefined, 400);
     await request('POST', '/inventory/products/delete/2147483647', {}, 404);
+  });
+  await t.test('product forms preserve custom categories and allow supplier assignment or removal', async () => {
+    const fields = { name: 'Unassigned QA', category: 'custom_spares', description: '', price: '0', stock: '0', supplier_id: '' };
+    const addPage = (await request('GET', '/inventory/products/add')).html;
+    assert(!addPage.match(/<select[^>]*id="supplier_id"[^>]*>/)[0].includes('required'));
+    assert(!addPage.match(/<textarea[^>]*id="description"[^>]*>/)[0].includes('required'));
+    await request('POST', '/inventory/products/add', fields, 302);
+    const id = (await db.query('SELECT id FROM products WHERE name=$1', [fields.name])).rows[0].id;
+    for (const assignment of [String(supplierId), '']) {
+      const { html } = await request('GET', `/inventory/products/edit/${id}`);
+      assert.match(html, /value="custom_spares" selected/);
+      assert.match(html, /name="supplier_id"/);
+      assert(!html.match(/<textarea[^>]*id="description"[^>]*>/)[0].includes('required'));
+      const revision = html.match(/name="revision" value="(\d+)"/)[1];
+      await request('POST', `/inventory/products/edit/${id}`, { ...fields, supplier_id: assignment, revision }, 302);
+      const saved = (await db.query('SELECT * FROM products WHERE id=$1', [id])).rows[0];
+      assert.equal(saved.supplier_id, assignment ? supplierId : null);
+      assert.equal(saved.category, 'custom_spares');
+      assert.equal(saved.description, '');
+    }
+    await request('POST', `/inventory/products/delete/${id}`, {}, 302);
   });
   await t.test('concurrent restocks preserve every quantity and authenticated user ID', async () => {
     const send = () => fetch(base + '/inventory/restock', { method: 'POST', redirect: 'manual', headers: { Cookie: [...jar].map(([k,v]) => `${k}=${v}`).join('; '), 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ _csrf: csrf, product_id: productId, restock_quantity: '2' }) });
@@ -170,6 +199,20 @@ test('inventory workflow uses PostgreSQL without modifying existing inventory', 
     }), error => error.code === '23503');
     assert.equal((await db.query('SELECT stock FROM products WHERE id=$1', [productId])).rows[0].stock, before);
   });
+  await t.test('stale product editors cannot overwrite later restocks or edits', async () => {
+    const route = `/inventory/products/edit/${productId}`;
+    const revision = (await request('GET', route)).html.match(/name="revision" value="(\d+)"/)[1];
+    const before = (await db.query('SELECT stock FROM products WHERE id=$1', [productId])).rows[0].stock;
+    await request('POST', '/inventory/restock', { product_id: productId, restock_quantity: '2' }, 302);
+    const conflict = await request('POST', route, { ...product, stock: before, revision }, 409);
+    assert.match(conflict.html, /changed after you opened it/);
+    assert.match(conflict.html, /Reload product editor/);
+    assert.equal((await db.query('SELECT stock FROM products WHERE id=$1', [productId])).rows[0].stock, before + 2);
+    await request('POST', route, product, 400);
+    const current = (await request('GET', route)).html.match(/name="revision" value="(\d+)"/)[1];
+    await request('POST', route, { ...product, stock: before + 2, revision: current }, 302);
+    await request('POST', route, { ...product, stock: before, revision: current }, 409);
+  });
   await t.test('dashboard chart data escapes script content and counts all stock levels', async () => {
     await db.query('UPDATE products SET category=$1,stock=12 WHERE id=$2', ['</script><script>alert(1)</script>', productId]);
     const { html } = await request('GET', '/dashboard');
@@ -178,6 +221,27 @@ test('inventory workflow uses PostgreSQL without modifying existing inventory', 
     const chartData = JSON.parse(html.match(/<script id="dashboard-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
     assert.equal(chartData.stockLevels.good, 1);
     assert.equal(chartData.categoryDistribution[0].category, '</script><script>alert(1)</script>');
+  });
+  await t.test('overview shows supplier details, prioritizes low stock, and safely returns after restocking', async () => {
+    const inserted = await db.query(`INSERT INTO products(name,category,price,stock,supplier_id)
+      SELECT 'Overview QA '||n,'accessories',5,CASE WHEN n=1 THEN 0 ELSE 20 END,$1
+      FROM generate_series(1,9) n RETURNING id`, [supplierId]);
+    try {
+      const { html } = await request('GET', '/dashboard');
+      const rows = [...html.matchAll(/data-product-details="([^"]+)"/g)].map(match => JSON.parse(match[1].replace(/&#34;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&')));
+      assert.equal(rows.length, 8);
+      assert.equal(rows[0].name, 'Overview QA 1');
+      assert.equal(rows[0].supplier, "Supplier's updated name");
+      assert.equal(rows[0].stock, 0);
+      assert.equal(rows[0].price, '₹5.00');
+      assert.match((await request('GET', '/inventory/reports')).html, /name="return_to" value="\/inventory\/reports"/);
+      const quantities = (await db.query('SELECT stock FROM products WHERE id=$1', [productId])).rows[0].stock;
+      for (const [return_to, expected] of [['/dashboard','/dashboard'], ['/inventory/reports','/inventory/reports'], ['https://example.invalid','/inventory/products']]) {
+        const response = await request('POST', '/inventory/restock', { product_id: productId, restock_quantity: '1', return_to }, 302);
+        assert.equal(response.headers.get('location'), expected);
+      }
+      assert.equal((await db.query('SELECT stock FROM products WHERE id=$1', [productId])).rows[0].stock, quantities + 3);
+    } finally { await db.query('DELETE FROM products WHERE id=ANY($1::int[])', [inserted.rows.map(row => row.id)]); }
   });
   await t.test('settings, preferences, and profile updates persist in PostgreSQL', async () => {
     await request('POST', '/inventory/settings/update-name', { name: 'Updated QA' }, 302);
@@ -195,6 +259,13 @@ test('inventory workflow uses PostgreSQL without modifying existing inventory', 
     const form = new FormData(); form.set('_csrf', csrf); form.set('profilePic', new Blob([png], { type: 'image/png' }), 'avatar.png');
     await request('POST', '/inventory/settings/upload-profile-pic', form, 302);
     assert.equal(fs.readdirSync(uploadDir).length, 1);
+    const previous = (await db.query('SELECT profile_pic FROM users WHERE id=$1', [userId])).rows[0].profile_pic;
+    const replacement = new FormData(); replacement.set('_csrf', csrf); replacement.set('profilePic', new Blob([png], { type: 'image/png' }), 'replacement.png');
+    await request('POST', '/inventory/settings/upload-profile-pic', replacement, 302);
+    const current = (await db.query('SELECT profile_pic FROM users WHERE id=$1', [userId])).rows[0].profile_pic;
+    assert.notEqual(current, previous);
+    assert.equal(fs.existsSync(path.join(uploadDir, path.basename(previous))), false);
+    assert.equal(fs.readdirSync(uploadDir).length, 1);
     const bad = new FormData(); bad.set('_csrf', csrf); bad.set('profilePic', new Blob(['not an image'], { type: 'image/png' }), 'bad.png');
     await request('POST', '/inventory/settings/upload-profile-pic', bad, 400);
     const forged = new FormData(); forged.set('profilePic', new Blob([png], { type: 'image/png' }), 'forged.png');
@@ -205,7 +276,7 @@ test('inventory workflow uses PostgreSQL without modifying existing inventory', 
     const before = (await db.query('SELECT profile_pic FROM users WHERE id=$1', [userId])).rows[0].profile_pic;
     const originalQuery = db.query;
     db.query = function(sql, ...args) {
-      if (typeof sql === 'string' && sql.startsWith('UPDATE users SET profile_pic=')) return Promise.reject(new RequestError(503, 'Temporary database failure'));
+      if (typeof sql === 'string' && sql.includes('UPDATE users SET profile_pic=')) return Promise.reject(new RequestError(503, 'Temporary database failure'));
       return originalQuery.call(this, sql, ...args);
     };
     try {
