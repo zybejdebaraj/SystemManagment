@@ -1,0 +1,67 @@
+<!-- Sidebar -->
+<div class="d-flex flex-column flex-shrink-0 bg-dark text-white p-4" style="width: 250px; height: 1400px;">
+    <!-- Sidebar Title/Logo -->
+    <a href="/dashboard" class="text-decoration-none">
+      <div class="d-flex align-items-center mb-5 mt-2 ps-4">
+        <i class="fa-solid fa-book-open fs-5 text-danger me-2"></i>
+        <span class="fs-5 fw-bold text-white">Inventory</span>
+      </div>
+    </a>
+
+    <!-- Sidebar navigation -->
+    <ul class="nav nav-pills flex-column mb-auto">
+        <!-- Products Section -->
+        <li class="nav-item mb-3 mt-5 fs-5">
+            <a class="nav-link text-white d-flex align-items-center" data-bs-toggle="collapse" href="#productsMenu" role="button" aria-expanded="false" aria-controls="productsMenu">
+                <i class="bi bi-box me-2"></i> Products
+                <i class="bi bi-chevron-down ms-auto fs-6"></i>
+            </a>
+            <div class="collapse" id="productsMenu">
+                <ul class="nav flex-column ms-4 fs-5">
+                    <li class="nav-item"><a href="/inventory/products" class="nav-link text-white">View Products</a></li>
+                    <li class="nav-item"><a href="/inventory/products/add" class="nav-link text-white">Add Product</a></li>
+                </ul>
+            </div>
+        </li>
+        <!-- Suppliers Section -->
+        <li class="nav-item mb-3 fs-5">
+            <a class="nav-link text-white d-flex align-items-center" data-bs-toggle="collapse" href="#suppliersMenu" role="button" aria-expanded="false" aria-controls="suppliersMenu">
+                <i class="bi bi-truck me-2"></i> Suppliers
+                <i class="bi bi-chevron-down ms-auto fs-6"></i>
+            </a>
+            <div class="collapse" id="suppliersMenu">
+                <ul class="nav flex-column ms-4 fs-5">
+                    <li class="nav-item"><a href="/inventory/suppliers" class="nav-link text-white">View Suppliers</a></li>
+                    <li class="nav-item"><a href="/inventory/suppliers/add" class="nav-link text-white">Add Supplier</a></li>
+                </ul>
+            </div>
+        </li>
+        <!-- Settings Section -->
+        <li class="nav-item mb-3 fs-5">
+            <a class="nav-link text-white d-flex align-items-center" data-bs-toggle="collapse" href="#settingsMenu" role="button" aria-expanded="false" aria-controls="settingsMenu">
+                <i class="bi bi-gear me-2"></i> Settings
+                <i class="bi bi-chevron-down ms-auto fs-6"></i>
+            </a>
+            <div class="collapse" id="settingsMenu">
+                <ul class="nav flex-column ms-4 fs-5">
+                    <li class="nav-item"><a href="/inventory/settings/profile" class="nav-link text-white">User Profile</a></li>
+                    <li class="nav-item"><a href="/inventory/settings/security" class="nav-link text-white">Security</a></li>
+                    <li class="nav-item"><a href="/inventory/settings/preferences" class="nav-link text-white">Preferences</a></li>
+                </ul>
+            </div>
+        </li>
+        <!-- Reports Link -->
+        <li class="nav-item mb-3 fs-5">
+            <a href="/inventory/reports" class="nav-link text-white d-flex align-items-center">
+                <i class="bi bi-graph-up me-2"></i> Reports
+            </a>
+        </li>
+
+        <!-- Profile Link -->
+        <li class="nav-item mb-3 fs-5">
+            <a href="/inventory/profile" class="nav-link text-white d-flex align-items-center">
+                <i class="bi bi-person-circle me-2"></i> Profile
+            </a>
+        </li>
+    </ul>
+</div>

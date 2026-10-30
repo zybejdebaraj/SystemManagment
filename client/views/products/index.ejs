@@ -1,0 +1,166 @@
+
+ <!-- Main Content and Sidebar -->
+
+
+            <!-- Product List Section -->
+            <div class="container-fluid px-4 py-4">
+                <!-- Header Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1 fw-bold">Products</h2>
+                        <p class="text-muted">Manage your product inventory</p>
+                    </div>
+                    <a href="/inventory/products/add" class="btn btn-primary fw-bold">
+                        <i class="bi bi-plus-lg me-2"></i>Add Product
+                    </a>
+                </div>
+
+                <!-- Alert Messages -->
+
+
+
+
+                <!-- Search and Filter Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0">
+                                        <i class="bi bi-search text-muted"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Search products...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+  <select class="form-select" id="categoryFilter">
+    <option value="">All Categories</option>
+    <option value="smartphones">Smartphones</option>
+    <option value="laptops">Laptops</option>
+    <option value="desktops">Desktops</option>
+    <option value="tablets">Tablets</option>
+    <option value="monitors">Monitors</option>
+    <option value="printers_scanners">Printers & Scanners</option>
+    <option value="storage_devices">Storage Devices</option>
+    <option value="networking">Networking</option>
+    <option value="accessories">Accessories</option>
+    <option value="headphones_audio">Headphones & Audio</option>
+    <option value="tv_entertainment">TV & Entertainment</option>
+    <option value="wearables">Wearables</option>
+    <option value="gaming">Gaming</option>
+    <option value="power_charging">Power & Charging</option>
+    <option value="components">Components</option>
+    <option value="smart_home">Smart Home</option>
+    <option value="cameras">Cameras</option>
+  </select>
+</div>
+
+                            <div class="col-md-3">
+                                <select class="form-select" id="stockFilter">
+                                    <option value="">All Stock Status</option>
+                                    <option value="in-stock">In Stock</option>
+                                    <option value="low-stock">Low Stock</option>
+                                    <option value="out-of-stock">Out of Stock</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-secondary w-100" id="resetFilters">
+                                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <!-- Products Table -->
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive" style="max-height: 700px; overflow-y: auto;">
+                            <table class="table table-hover align-middle">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="py-3">Product</th>
+                                        <th class="py-3">Description</th>
+                                        <th class="py-3">Category</th>
+                                        <th class="py-3">Price</th>
+                                        <th class="py-3">Stock</th>
+                                        <th class="py-3 text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% products.forEach(product => { %>
+                                        <tr data-product-row data-category="<%= product.category %>" data-stock="<%= product.stock %>">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-light rounded p-2 me-3">
+                                                        <i class="bi bi-box text-primary fs-4"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0"><%= product.name %></h6>
+                                                        <small class="text-muted">ID: <%= product.id %></small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><%= product.description %></td>
+                                            <td>
+                                                <span class="badge bg-info text-capitalize"><%= product.category %></span>
+                                            </td>
+                                            <td>
+                                                <span class="fw-semibold">$<%= product.price %></span>
+                                            </td>
+                                            <td>
+                                                <% if (product.stock >= 10) { %>
+                                                    <span class="badge bg-success">In Stock</span>
+                                                <% } else if (product.stock > 0) { %>
+                                                    <span class="badge bg-warning">Low Stock</span>
+                                                <% } else { %>
+                                                    <span class="badge bg-danger">Out of Stock</span>
+                                                <% } %>
+                                                <small class="text-muted ms-2"><%= product.stock %> units</small>
+                                            </td>
+                                            <td class="text-end">
+                                                <div class="btn-group">
+                                                    <a href="/inventory/products/edit/<%= product.id %>" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            data-id="<%= product.id %>" data-name="<%= product.name %>" onclick="confirmDelete(this.dataset.id, this.dataset.name)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete <span id="productName" class="fw-bold"></span>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="POST" class="d-inline">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/products.js" defer></script>

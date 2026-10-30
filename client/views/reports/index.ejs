@@ -1,0 +1,142 @@
+<style>
+    .inventory-section {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 2rem;
+    }
+
+    .inventory-list {
+      max-height: 350px;
+      overflow-y: auto;
+    }
+
+    .inventory-item, .low-stock-item {
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 0.75rem;
+      background: #f8f9fa;
+      border-left: 4px solid #0d6efd;
+      transition: background-color 0.3s ease;
+    }
+
+    .inventory-item:hover, .low-stock-item:hover {
+      background-color: #e9f4ff;
+    }
+
+    .stock-level {
+      padding: 0.25rem 0.5rem;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .stock-good {
+      background-color: #28a745;
+    }
+
+    .stock-warning {
+      background-color: #ffc107;
+      color: #212529;
+    }
+
+    .stock-danger {
+      background-color: #dc3545;
+    }
+  </style>
+  <div class="container py-4">
+    <div class="row">
+      <!-- Low Stock Items -->
+      <div class="col-md-6">
+        <div class="inventory-section">
+          <h5 class="mb-4 text-primary fw-bold">
+            <i class="bi bi-exclamation-circle me-2 "></i>Low Stock Items
+          </h5>
+          <div class="inventory-list">
+            <% dashboardData.lowStockProducts.forEach(product => { %>
+              <div class="low-stock-item">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1"><%= product.name %></h6>
+                    <small class="text-muted">
+                      Current Stock: <%= product.stock %> |
+                      Price: ₹<%= product.price %> |
+                      Supplier: <%= product.supplier_name || 'Unknown' %>
+                    </small>
+                  </div>
+                  <!-- Restock button toggles form -->
+                  <button
+                    class="btn btn-sm btn-warning"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#restockForm-<%= product.id %>"
+                    aria-expanded="false"
+                    aria-controls="restockForm-<%= product.id %>">
+                    Restock
+                  </button>
+                </div>
+
+                <!-- Collapsible restock form -->
+                <div class="collapse mt-3" id="restockForm-<%= product.id %>">
+                  <form action="/inventory/restock" method="POST">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="product_id" value="<%= product.id %>">
+                    <div class="input-group">
+                      <input
+                        type="number"
+                        name="restock_quantity"
+                        class="form-control"
+                        min="1"
+                        placeholder="Quantity to add"
+                        required
+                      >
+                      <button type="submit" class="btn btn-success fw-bold">Add</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Inventory Updates -->
+      <div class="col-md-6">
+        <div class="inventory-section">
+          <h5 class="mb-4 text-info fw-bold">
+            <i class="bi bi-clock-history me-2"></i>Recent Inventory Updates
+          </h5>
+          <div class="inventory-list">
+            <% if (dashboardData.recentUpdates && dashboardData.recentUpdates.length > 0) { %>
+              <% dashboardData.recentUpdates.forEach(product => { %>
+                <div class="inventory-item">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1"><%= product.name %></h6>
+                      <small class="text-muted">
+                        Last Updated: <%= new Date(product.created_at).toLocaleDateString() %> |
+                        Stock Level:
+                        <span class="stock-level <%= product.stock < 5 ? 'stock-danger' : (product.stock < 10 ? 'stock-warning' : 'stock-good') %>">
+                          <%= product.stock < 5 ? 'Critical' : (product.stock < 10 ? 'Low' : 'Good') %>
+                        </span>
+                      </small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary">View</button>
+                  </div>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <div class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-1"></i>
+                <p class="mt-2">No recent updates</p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle (includes Popper for collapse) -->

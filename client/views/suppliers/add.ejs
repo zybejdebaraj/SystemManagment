@@ -1,0 +1,38 @@
+
+
+    <div class="container-fluid px-4 py-4">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1 fw-bold">Add Supplier</h2>
+                <p class="text-muted">Add a new supplier to your system</p>
+            </div>
+            <a href="/inventory/suppliers" class="btn btn-outline-secondary fw-bold">
+                <i class="bi bi-arrow-left me-2 "></i>Back to Suppliers
+            </a>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <form action="/inventory/suppliers/add" method="POST">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="mb-3">
+                        <label for="name" class="form-label fw-bold">Supplier Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Enter Supplier Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact" class="form-label fw-bold">Contact</label>
+                        <input type="text" class="form-control" id="contact" name="contact" placeholder="Enter contact" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-bold">Email</label>
+                        <input type="email" class="form-control" id="email" name="email"placeholder="Enter email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label fw-bold">Address</label>
+                        <textarea class="form-control" id="address" name="address" placeholder="Enter address" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary fw-bold">Add Supplier</button>
+                </form>
+            </div>
+        </div>
+    </div>

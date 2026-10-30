@@ -1,0 +1,21 @@
+{
+  "name": "inventory-client",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Inventory EJS templates, styles, and browser scripts",
+  "scripts": {
+    "dev": "node --watch scripts/dev.cjs",
+    "check": "node scripts/check.cjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.8"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

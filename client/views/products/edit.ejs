@@ -1,0 +1,73 @@
+
+
+
+<div class="container-fluid px-4 py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 fw-bold">Edit Product</h2>
+            <p class="text-muted">Update product information</p>
+        </div>
+        <a href="/inventory/products" class="btn btn-outline-secondary fw-bold">
+            <i class="bi bi-arrow-left me-2 fw-bold"></i>Back to Products
+        </a>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <!-- Edit form action -->
+            <form action="/inventory/products/edit/<%= product.id %>" method="POST">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div class="mb-4">
+                    <label for="name" class="form-label fw-bold">Product Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="<%= product.name %>" required>
+                </div>
+                <div class="mb-4">
+                    <label for="description" class="form-label fw-bold">Description</label>
+                    <textarea class="form-control" id="description" name="description" required><%= product.description %></textarea>
+                </div>
+               <div class="mb-4">
+  <label for="category" class="form-label fw-bold">Category</label>
+ <select class="form-select" id="category" name="category" required>
+    <option value="smartphones" <%= product.category === 'smartphones' ? 'selected' : '' %>>Smartphones</option>
+    <option value="laptops" <%= product.category === 'laptops' ? 'selected' : '' %>>Laptops</option>
+    <option value="desktops" <%= product.category === 'desktops' ? 'selected' : '' %>>Desktops</option>
+    <option value="tablets" <%= product.category === 'tablets' ? 'selected' : '' %>>Tablets</option>
+    <option value="monitors" <%= product.category === 'monitors' ? 'selected' : '' %>>Monitors</option>
+    <option value="printers_scanners" <%= product.category === 'printers_scanners' ? 'selected' : '' %>>Printers & Scanners</option>
+    <option value="storage_devices" <%= product.category === 'storage_devices' ? 'selected' : '' %>>Storage Devices</option>
+    <option value="networking" <%= product.category === 'networking' ? 'selected' : '' %>>Networking</option>
+    <option value="accessories" <%= product.category === 'accessories' ? 'selected' : '' %>>Accessories</option>
+    <option value="headphones_audio" <%= product.category === 'headphones_audio' ? 'selected' : '' %>>Headphones & Audio</option>
+    <option value="tv_entertainment" <%= product.category === 'tv_entertainment' ? 'selected' : '' %>>TV & Entertainment</option>
+    <option value="wearables" <%= product.category === 'wearables' ? 'selected' : '' %>>Wearables</option>
+    <option value="gaming" <%= product.category === 'gaming' ? 'selected' : '' %>>Gaming</option>
+    <option value="power_charging" <%= product.category === 'power_charging' ? 'selected' : '' %>>Power & Charging</option>
+    <option value="components" <%= product.category === 'components' ? 'selected' : '' %>>Components</option>
+    <option value="smart_home" <%= product.category === 'smart_home' ? 'selected' : '' %>>Smart Home</option>
+    <option value="cameras" <%= product.category === 'cameras' ? 'selected' : '' %>>Cameras</option>
+  </select>
+</div>
+
+                <div class="mb-4">
+                    <label for="price" class="form-label fw-bold">Price</label>
+                    <input type="number" class="form-control" id="price" name="price" min="0" max="99999999.99" step="0.01" value="<%= product.price %>" required>
+                </div>
+                <div class="mb-4">
+                    <label for="stock" class="form-label fw-bold">Stock</label>
+                    <input type="number" class="form-control" id="stock" name="stock" min="0" max="2147483647" step="1" value="<%= product.stock %>" required>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="/inventory/products" class="btn btn-secondary fw-bold">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-bold">Update Product</button>
+                </div>
+            </form>
+
+            <!-- Alert Messages -->
+
+
+
+        </div>
+    </div>
+</div>
+
+<script src="/js/products-edit-1.js" defer></script>

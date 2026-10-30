@@ -1,0 +1,76 @@
+
+
+            <!-- Profile container -->
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <h2 class="text-center mb-5">User Profile Settings</h2>
+                <!-- Alert message -->
+
+
+
+
+
+
+                <!-- Email update form -->
+                <form action="/inventory/settings/update-email" method="POST">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="mb-4">
+                        <label for="email" class="form-label fs-5 fw-bold">Email:</label>
+                        <input type="email" id="email" name="email" class="form-control p-3" value="<%= user.email %>" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Update Email</button>
+                </form>
+
+                <!-- Name update form -->
+                <form action="/inventory/settings/update-name" method="POST" class="mt-4">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <div class="mb-4">
+                        <label for="name" class="form-label fs-5 fw-bold">Name:</label>
+                        <input type="text" id="name" name="name" class="form-control p-3" value="<%= user.name %>" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold">Update Name</button>
+                </form>
+                <br><br>
+                <!-- Password change form -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="text-center fw-bold">Change Password</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="/inventory/settings/change-password" method="POST">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <div class="mb-3">
+                                <label for="current-password" class="form-label">Current Password</label>
+                                <input type="password" name="current-password" id="current-password" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new-password" class="form-label">New Password</label>
+                                <input type="password" name="new-password" id="new-password" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm-password" class="form-label">Confirm New Password</label>
+                                <input type="password" name="confirm-password" id="confirm-password" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-warning w-100 py-2 fw-bold">Change Password</button>
+                        </form>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+<section class="container mt-4 mb-4"><div class="card card-body">
+  <h3 class="h5">Profile picture</h3>
+  <% if (user.profile_pic) { %><img src="<%= user.profile_pic %>" alt="Your profile" width="96" height="96" class="rounded mb-3"><% } %>
+  <form action="/inventory/settings/upload-profile-pic" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label class="form-label">PNG or JPEG image, up to 5 MB<input class="form-control" type="file" name="profilePic" accept="image/png,image/jpeg" required></label>
+    <button class="btn btn-primary" type="submit">Save picture</button>
+  </form>
+</div></section>

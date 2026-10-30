@@ -1,0 +1,49 @@
+
+
+<!-- Preferences container -->
+    <div class="container mt-5">
+        <h2 class="text-center fw-bold">User Preferences</h2><p class="text-muted">Preferences are saved to your account. Theme switching, translations, and email/SMS delivery are not enabled yet.</p>
+
+        <!-- Preferences Form -->
+        <form action="/inventory/settings/update-preferences" method="POST">
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <!-- Theme Preference -->
+            <div class="mb-4">
+                <label for="theme" class="form-label fw-bold">Theme</label>
+                <select name="theme" id="theme" class="form-select" required>
+                    <option value="light" <%= user.theme === 'light' ? 'selected' : '' %>>Light</option>
+                    <option value="dark" <%= user.theme === 'dark' ? 'selected' : '' %>>Dark</option>
+                </select>
+            </div>
+
+            <!-- Language Preference -->
+            <div class="mb-4">
+                <label for="language" class="form-label fw-bold">Language</label>
+                <select name="language" id="language" class="form-select" required>
+                    <option value="en" <%= user.language === 'en' ? 'selected' : '' %>>English</option>
+                    <option value="es" <%= user.language === 'es' ? 'selected' : '' %>>Spanish</option>
+                    <option value="fr" <%= user.language === 'fr' ? 'selected' : '' %>>French</option>
+                </select>
+            </div>
+
+            <!-- Notification Preferences -->
+            <div class="mb-4">
+                <label class="form-label fw-bold">Notification Preferences</label>
+                <div class="form-check">
+                    <input type="checkbox" name="email_notifications" class="form-check-input" id="email_notifications" <%= user.email_notifications ? 'checked' : '' %>>
+                    <label class="form-check-label" for="email_notifications">
+                        Receive email notifications
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" name="sms_notifications" class="form-check-input" id="sms_notifications" <%= user.sms_notifications ? 'checked' : '' %>>
+                    <label class="form-check-label" for="sms_notifications">
+                        Receive SMS notifications
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary fw-bold">Save Preferences</button>
+        </form>
+    </div>

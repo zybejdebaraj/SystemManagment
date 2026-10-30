@@ -1,0 +1,53 @@
+<style>
+
+        .dashboard-title {
+            color: #222;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .dashboard-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .dashboard-label {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+    </style>
+    <div class="container-fluid px-4 py-4">
+        <h2 class="dashboard-title">All Sales</h2>
+
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card dashboard-card shadow-sm rounded-4">
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Total Price</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+<% if (!salesList.length) { %><tr><td colspan="5" class="text-muted">No sales recorded.</td></tr><% } %>
+                                <% salesList.forEach(sale => { %>
+                                    <tr>
+                                        <td><%= sale.id %></td>
+                                        <td><%= sale.product_name %></td>
+                                        <td><%= sale.quantity %></td>
+                                        <td>₹<%= sale.total_price %></td>
+                                        <td><%= new Date(sale.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

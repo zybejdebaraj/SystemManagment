@@ -1,0 +1,12 @@
+<% if (googleEnabled) { %>
+  <a href="/auth/google" class="btn btn-light w-100 d-flex align-items-center justify-content-center border">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20" height="20" alt="" class="me-2">
+    <%= label %>
+  </a>
+<% } else { %>
+  <button type="button" class="btn btn-light w-100 d-flex align-items-center justify-content-center border" disabled aria-describedby="google-unavailable">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20" height="20" alt="" class="me-2">
+    <%= label %>
+  </button>
+  <p id="google-unavailable" class="small text-muted mt-2 mb-0">Google sign-in is currently unavailable. Please use email and password.</p>
+<% } %>

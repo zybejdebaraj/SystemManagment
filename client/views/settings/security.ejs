@@ -1,0 +1,17 @@
+<section class="container mt-4">
+  <h2>Security settings</h2>
+  <p class="text-muted">Password changes require your current password. Session duration applies to your current account.</p>
+  <form action="/inventory/settings/change-password" method="POST" class="card card-body mb-4">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label class="form-label">Current password<input class="form-control" type="password" name="current-password" autocomplete="current-password" required></label>
+    <label class="form-label">New password<input class="form-control" type="password" name="new-password" autocomplete="new-password" minlength="8" required></label>
+    <label class="form-label">Confirm password<input class="form-control" type="password" name="confirm-password" autocomplete="new-password" minlength="8" required></label>
+    <button class="btn btn-primary" type="submit">Change password</button>
+  </form>
+  <form action="/inventory/settings/update-session-timeout" method="POST" class="card card-body">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label class="form-label">Session duration (minutes)<input class="form-control" type="number" name="session-timeout" min="5" max="1440" value="<%= user.session_timeout %>" required></label>
+    <button class="btn btn-primary" type="submit">Save session duration</button>
+  </form>
+  <p class="text-muted mt-3">Two-factor authentication and remote session revocation are not implemented.</p>
+</section>
