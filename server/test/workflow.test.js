@@ -85,7 +85,7 @@ test('inventory workflow uses PostgreSQL without modifying existing inventory', 
     await request('GET', '/'); assert.match(csrf, /^[a-f0-9]{64}$/);
   });
   await t.test('client assets are served from their new folder without exposing server files', async () => {
-    for (const asset of ['/styles.css','/image/inv3.jpg','/js/products.js','/js/dashboard.js','/js/workspace.js','/js/overview.js','/vendor/chart.js']) {
+    for (const asset of ['/styles.css','/js/login-1.js','/js/signup-1.js','/js/products.js','/js/dashboard.js','/js/workspace.js','/js/overview.js','/vendor/chart.js']) {
       const response = await fetch(base + asset);
       assert.equal(response.status, 200, asset); assert((await response.arrayBuffer()).byteLength > 0);
     }

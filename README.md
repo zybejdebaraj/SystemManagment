@@ -9,7 +9,7 @@ The Stockroom Operations interface includes a compact sidebar, live inventory su
 ```text
 client/
   views/                  EJS pages and shared layouts
-  public/                 Styles, images, and browser JavaScript
+  public/                 Styles and browser JavaScript
   scripts/check.cjs       Template and browser-script checks
   test/                   Browser behavior regression tests
   package.json
@@ -44,8 +44,6 @@ Create a PostgreSQL database named `inventory_db` using pgAdmin or `createdb inv
 ```powershell
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
-
-The local configuration created in this workspace already points to `inventory_db` on the existing local PostgreSQL installation. `server/.env.local` contains the private connection values and a generated session secret; it is ignored by Git. Never commit it.
 
 Start both processes in separate terminals.
 
@@ -106,7 +104,7 @@ The workflow suite requires the local `inventory_db` database and schema-creatio
 
 ## Separate development ports
 
-From the repository root, run `./start-dev.ps1`. It opens separate Windows terminal windows titled **Inventory - Server** and **Inventory - Client**. Each window runs only its own process. The launcher leaves an occupied port alone to avoid starting duplicate instances. Use Ctrl+C in the relevant window to stop that process. `./start-dev.ps1 -CheckOnly` checks the ports without opening windows.
+Open two terminals: run `npm run dev` inside `server` in one and inside `client` in the other. Use Ctrl+C in the relevant terminal to stop that process.
 
 - Client: `npm run dev` inside `client`, http://localhost:5173.
 - Server: `npm run dev` inside `server`, http://localhost:3002.
@@ -122,4 +120,4 @@ Client-side scripts live in `client/public/js`. Product search, category, and st
 
 Product editors include a revision token: saving an outdated form returns a conflict page with a link to reload the latest data, preserving intervening edits and restocks. Editing keeps custom categories and allows suppliers to be assigned or removed; descriptions and supplier assignments are optional. Private pages use `Cache-Control: no-store`. Replacing a profile picture removes the previous generated file only after its database update succeeds.
 
-If startup reports `EADDRINUSE`, another process is using that process's port. Stop the duplicate client or server watcher with Ctrl+C and restart the affected process. When switching from the earlier shared-server setup, stop the old terminal processes before starting one process from each folder.
+If startup reports `EADDRINUSE`, another process is using that process's port. Stop the duplicate client or server watcher with Ctrl+C and restart the affected process.
